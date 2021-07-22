@@ -38,12 +38,17 @@ func FixedTestSeed(b byte) *[32]byte {
 	return result
 }
 
-func RandomPrime(bits int) []byte {
+func RandomPrimeInt(bits int) *big.Int {
 	bigInt, err := rand.Prime(rand.Reader, bits)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return bigInt.Bytes()
+	return bigInt
+}
+
+func RandomPrime(bits int) []byte {
+
+	return RandomPrimeInt(bits).Bytes()
 }
 
 func FixedXOR(src []byte) chan []byte {
@@ -54,6 +59,27 @@ func FixedXOR(src []byte) chan []byte {
 		dst[i] = src[i] ^ src[i+t]
 	}
 	return DecodeHex(dst)
+}
+
+func newEcSk(ctx context.Context) *ecdsa.PrivateKey {
+	defer ctx.Done()
+	curve := elliptic.P521()
+
+	pk, x, y, err := elliptic.GenerateKey(curve, rand.Reader)
+	if err != nil {
+		panic(err)
+	}
+
+	pubk := ecdsa.PublicKey{
+		Curve: curve,
+		X:     x,
+		Y:     y,
+	}
+
+	return &ecdsa.PrivateKey{
+		PublicKey: pubk,
+		D:         big.NewInt(0).SetBytes(pk),
+	}
 }
 
 func GenerateKeyPair(ctx context.Context) KP {

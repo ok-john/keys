@@ -2,6 +2,7 @@ package keys
 
 import (
 	"crypto"
+	"crypto/ecdsa"
 	"crypto/rand"
 	"crypto/sha512"
 	"log"
@@ -29,12 +30,21 @@ func (m SecpMessage) digest() [sha512.Size]byte {
 	return sha512.Sum512(m.bytes())
 }
 
-func (m SecpMessage) sign(kp KP) []byte {
+func (m SecpMessage) sign(sk *ecdsa.PrivateKey) []byte {
+	// digest the message
 	dgst := m.digest()
-	signedMsg, err := kp.sk.Sign(rand.Reader, dgst[:], crypto.SHA512)
+
+	// Sign
+	signedMsg, err := sk.Sign(rand.Reader, dgst[:], crypto.SHA512)
 	if err != nil {
 		log.Fatalf("failed to sign\n\tmessage m: %+v\n\tgot err: %+v", m, err)
 	}
-	log.Printf("%+v", signedMsg)
+
+	// Verify
+	if !ecdsa.VerifyASN1(&sk.PublicKey, dgst[:], signedMsg) {
+		log.Fatalf("failed to verifyANS1\n\tmessage m: %+v\n\tdigest d: %+v", signedMsg, dgst)
+	}
+
+	log.Printf("ANS1 signature verified %v", signedMsg)
 	return signedMsg
 }
