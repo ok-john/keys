@@ -1,11 +1,14 @@
 package keys
 
 import (
+	"context"
 	"crypto"
 	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/sha512"
 	"log"
+	"math/big"
 )
 
 // What format should i use here?
@@ -17,6 +20,51 @@ const (
 type (
 	SecpMessage string
 )
+
+func newEcSk(ctx context.Context) *ecdsa.PrivateKey {
+	defer ctx.Done()
+	curve := elliptic.P521()
+
+	pk, x, y, err := elliptic.GenerateKey(curve, rand.Reader)
+	if err != nil {
+		panic(err)
+	}
+
+	pubk := ecdsa.PublicKey{
+		Curve: curve,
+		X:     x,
+		Y:     y,
+	}
+
+	return &ecdsa.PrivateKey{
+		PublicKey: pubk,
+		D:         big.NewInt(5096).SetBytes(pk),
+	}
+}
+
+func GenerateKeyPair(ctx context.Context) KP {
+	defer ctx.Done()
+	curve := elliptic.P521()
+
+	pk, x, y, err := elliptic.GenerateKey(curve, rand.Reader)
+	if err != nil {
+		panic(err)
+	}
+
+	pubk := ecdsa.PublicKey{
+		Curve: curve,
+		X:     x,
+		Y:     y,
+	}
+
+	return KP{
+		pubk,
+		ecdsa.PrivateKey{
+			PublicKey: pubk,
+			D:         big.NewInt(0).SetBytes(pk),
+		},
+	}
+}
 
 func (m SecpMessage) bytes() []byte {
 	return []byte(m)

@@ -1,9 +1,7 @@
 package keys
 
 import (
-	"context"
 	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
@@ -61,51 +59,6 @@ func FixedXOR(src []byte) chan []byte {
 	return DecodeHex(dst)
 }
 
-func newEcSk(ctx context.Context) *ecdsa.PrivateKey {
-	defer ctx.Done()
-	curve := elliptic.P521()
-
-	pk, x, y, err := elliptic.GenerateKey(curve, rand.Reader)
-	if err != nil {
-		panic(err)
-	}
-
-	pubk := ecdsa.PublicKey{
-		Curve: curve,
-		X:     x,
-		Y:     y,
-	}
-
-	return &ecdsa.PrivateKey{
-		PublicKey: pubk,
-		D:         big.NewInt(5096).SetBytes(pk),
-	}
-}
-
-func GenerateKeyPair(ctx context.Context) KP {
-	defer ctx.Done()
-	curve := elliptic.P521()
-
-	pk, x, y, err := elliptic.GenerateKey(curve, rand.Reader)
-	if err != nil {
-		panic(err)
-	}
-
-	pubk := ecdsa.PublicKey{
-		Curve: curve,
-		X:     x,
-		Y:     y,
-	}
-
-	return KP{
-		pubk,
-		ecdsa.PrivateKey{
-			PublicKey: pubk,
-			D:         big.NewInt(0).SetBytes(pk),
-		},
-	}
-}
-
 func DecodeBase64(arr []byte) chan []byte {
 	ch := make(chan []byte, 1)
 	go decodeBase64(arr, ch)
@@ -114,7 +67,9 @@ func DecodeBase64(arr []byte) chan []byte {
 
 func decodeBase64(arr []byte, c chan []byte) {
 	buffer := make([]byte, base64.StdEncoding.DecodedLen(len(arr)))
-	base64.StdEncoding.Decode(buffer, arr)
+	if _, err := base64.StdEncoding.Decode(buffer, arr); err != nil {
+		log.Printf("WARN: failed to decode b64\n\tsrc: %v\n\terr: %v", arr, err)
+	}
 	c <- buffer
 }
 
@@ -138,7 +93,9 @@ func DecodeHex(src []byte) chan []byte {
 
 func decodeHex(c chan []byte, b []byte) {
 	buffer := make([]byte, hex.DecodedLen(len(b)))
-	hex.Decode(buffer, b)
+	if _, err := hex.Decode(buffer, b); err != nil {
+		log.Printf("WARN: failed to decode hex\n\tsrc: %v\n\terr: %v", b, err)
+	}
 	c <- buffer
 }
 

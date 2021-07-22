@@ -10,6 +10,10 @@ all: deps test compile
 verb: deps test-verbose compile
 secp: deps test-secp compile
 
+install-linter:
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.41.1
+	golangci-lint --version
+
 deps:
 	$(CC) get ./... && $(CC) mod tidy
 
