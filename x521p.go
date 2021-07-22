@@ -115,17 +115,15 @@ func GenerateX521p() *X521p {
 // NewX521pFromPrivateKey creates a X521p from private key bytes.
 func NewX521pFromPrivateKey(privateKey *[64]byte) *X521p {
 	x, y := elliptic.P521().Params().Params().ScalarBaseMult(privateKey[:])
-	pb := &ecdsa.PublicKey{
-		X: x,
-		Y: y,
-	}
-	res := X521p{
+	return &X521p{
+		id:         ID("not sure"),
 		privateKey: &[64]byte{},
-		publicKey:  Loadx521pPublicKey(pb),
+		publicKey: Loadx521pPublicKey(&ecdsa.PublicKey{
+			X: x,
+			Y: y,
+		}),
 	}
-	res.id = ID(X521pKeyHRP) + res.publicKey.id
 
-	return &res
 }
 
 // // NewX25519PublicKeyFromID converts ID to X25519PublicKey.
