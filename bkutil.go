@@ -1,19 +1,11 @@
 package keys
 
 import (
-	"crypto/ecdsa"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
 	"log"
 	"math/big"
-)
-
-type (
-	KP struct {
-		PB ecdsa.PublicKey
-		sk ecdsa.PrivateKey
-	}
 )
 
 func RandomTestSeed(b byte) *[32]byte {

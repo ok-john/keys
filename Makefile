@@ -6,16 +6,23 @@ MOD_NAME := keys
 
 default: all
 
-all: deps test compile
+all: deps test lint compile
 verb: deps test-verbose compile
 secp: deps test-secp compile
 
-install-linter:
+install-deps:
+	sudo snap install gosec
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.41.1
 	golangci-lint --version
 
 deps:
 	$(CC) get ./... && $(CC) mod tidy
+
+lint:
+	./lint.sh
+
+sec:
+	./security.sh
 
 compile:
 	$(CC) $(CFLAGS) ./...
