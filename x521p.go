@@ -23,6 +23,12 @@ type x521pPublicKey struct {
 	publicKey *[64]byte
 }
 
+type x521pPrivateKey struct {
+	id         ID
+	pb         *ecdsa.PublicKey
+	privateKey *[64]byte
+}
+
 func Loadx521pPublicKey(ecpb *ecdsa.PublicKey) *x521pPublicKey {
 	return &x521pPublicKey{
 		id:        ID(X521pKeyHRP),
