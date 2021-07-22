@@ -3,6 +3,7 @@ package keys
 import (
 	"context"
 	"crypto/ecdsa"
+	"log"
 	"reflect"
 	"testing"
 )
@@ -55,13 +56,19 @@ func TestSecpMessage_sign(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
 			signedMsg := tt.m.sign(tt.sk)
-			// if !reflect.DeepEqual(signedMsg, signedMsgHexEncoded) {
-			// 	t.Fatalf("no bueno senor, TestSecpMessage_sign\n\twanted: \n\t\t%v got\n\t\t%v", signedMsgHexEncoded, signedMsg)
-			// }
+			dgst := tt.m.digest()
+
+			// Verify again
+			if !ecdsa.VerifyASN1(&tt.sk.PublicKey, dgst[:], signedMsg) {
+				log.Fatalf("failed to verifyANS1\n\tmessage m: %+v\n\tdigest d: %+v", signedMsg, dgst)
+			}
+			// Check for empty
 			if reflect.DeepEqual(emptyMsg, signedMsgHexEncoded) {
 				t.Fatalf("nooope. didn't want any empty array...\n TestSecpMessage_sign\n\twanted: \n\t\t%v got\n\t\t%v", signedMsgHexEncoded, signedMsg)
 			}
+
 			t.Logf("signed msg: %s", <-EncodeHex(signedMsg))
 		})
 	}
