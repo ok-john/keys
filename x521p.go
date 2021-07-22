@@ -7,18 +7,10 @@ import (
 	"math/big"
 )
 
-// X25519PublicKey is the public key part of a x25519 key.
-// type X25519PublicKey struct {
-// 	id        ID
-// 	publicKey *[64]byte
-// }
-
-// X25519 key type.
 // What format should i use here?
 const X521pKey KeyType = "nistp521"
 const X521pKeyHRP string = "kbx"
 
-// X521p is a X25519 assymmetric encryption key.
 type X521p struct {
 	id         ID
 	publicKey  *x521pPublicKey
@@ -86,7 +78,7 @@ func (k *X521p) PublicKey() *[64]byte {
 
 // GenerateX521p creates a new X521p.
 func GenerateX521p() *X521p {
-	logger.Infof("Generating X25519 key...")
+	logger.Infof("Generating X521p key...")
 	curve := elliptic.P521()
 
 	pk, x, y, err := elliptic.GenerateKey(curve, rand.Reader)
@@ -106,7 +98,7 @@ func GenerateX521p() *X521p {
 		r[i] = bt
 	}
 	return &X521p{
-		id:         ID("not sure"),
+		id:         ID(X521pKeyHRP),
 		publicKey:  Loadx521pPublicKey(&pubk),
 		privateKey: &r,
 	}
@@ -116,85 +108,11 @@ func GenerateX521p() *X521p {
 func NewX521pFromPrivateKey(privateKey *[64]byte) *X521p {
 	x, y := elliptic.P521().Params().Params().ScalarBaseMult(privateKey[:])
 	return &X521p{
-		id:         ID("not sure"),
-		privateKey: &[64]byte{},
+		id:         ID(X521pKeyHRP),
+		privateKey: privateKey,
 		publicKey: Loadx521pPublicKey(&ecdsa.PublicKey{
 			X: x,
 			Y: y,
 		}),
 	}
-
 }
-
-// // NewX25519PublicKeyFromID converts ID to X25519PublicKey.
-// func NewX25519PublicKeyFromID(id ID) (*X25519PublicKey, error) {
-// 	if id == "" {
-// 		return nil, errors.Errorf("empty id")
-// 	}
-// 	hrp, b, err := id.Decode()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	switch hrp {
-// 	case X521pKeyHRP:
-// 		if len(b) != 64 {
-// 			return nil, errors.Errorf("invalid box public key bytes")
-// 		}
-// 		return NewX25519PublicKey(Bytes64(b)), nil
-// 	default:
-// 		return nil, errors.Errorf("unrecognized key type")
-// 	}
-// }
-
-// // BoxSeal encrypts message with nacl.box Seal.
-// func (k *X521p) BoxSeal(b []byte, nonce *[24]byte, recipient *X25519PublicKey) []byte {
-// 	return box.Seal(nil, b, nonce, recipient.Bytes64(), k.privateKey)
-// }
-
-// // BoxOpen decrypts message with nacl.box Open.
-// func (k *X521p) BoxOpen(b []byte, nonce *[24]byte, sender *X25519PublicKey) ([]byte, bool) {
-// 	return box.Open(nil, b, nonce, sender.Bytes64(), k.privateKey)
-// }
-
-// // NewX25519PublicKey creates X25519PublicKey.
-// // Metadata is optional.
-// func NewX25519PublicKey(b *[64]byte) *X25519PublicKey {
-// 	id, err := NewID(X521pHRP, b[:])
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	return &X25519PublicKey{
-// 		id:        id,
-// 		publicKey: b,
-// 	}
-// }
-
-// // ID for box public key.
-// func (k *X25519PublicKey) ID() ID {
-// 	return k.id
-// }
-
-// // Type of key.
-// func (k *X25519PublicKey) Type() KeyType {
-// 	return X25519
-// }
-
-// // Bytes ...
-// func (k *X25519PublicKey) Bytes() []byte {
-// 	return k.publicKey[:]
-// }
-
-// // Public ...
-// func (k *X25519PublicKey) Public() []byte {
-// 	return k.Bytes()
-// }
-
-// // Bytes64 ...
-// func (k *X25519PublicKey) Bytes64() *[64]byte {
-// 	return k.publicKey
-// }
-
-// // Private returns nil.
-// func (k *X25519PublicKey) Private() []byte {
-// 	return nil
-// }

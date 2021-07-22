@@ -15,8 +15,9 @@ func TestNewX521pKeyFromPrivateKey(t *testing.T) {
 	x521pKey := keys.GenerateX521p()
 	x521pKeyOut := keys.NewX521pFromPrivateKey(x521pKey.PrivateKey())
 
-	// require.Equal(t, x521pKey.PrivateKey(), x521pKeyOut.PrivateKey())
-	require.Equal(t, x521pKey.PublicKey(), x521pKeyOut.PublicKey())
+	require.Equal(t, x521pKey.PrivateKey(), x521pKeyOut.PrivateKey())
+
+	// require.Equal(t, x521pKey.PublicKey(), x521pKeyOut.PublicKey())
 }
 
 func TestGenerateX521pKey(t *testing.T) {
