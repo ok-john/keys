@@ -78,7 +78,7 @@ func newEcSk(ctx context.Context) *ecdsa.PrivateKey {
 
 	return &ecdsa.PrivateKey{
 		PublicKey: pubk,
-		D:         big.NewInt(0).SetBytes(pk),
+		D:         big.NewInt(5096).SetBytes(pk),
 	}
 }
 
